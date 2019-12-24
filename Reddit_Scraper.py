@@ -4,7 +4,7 @@ import matplotlib
 import numpy as np
 from apscheduler.schedulers.background import BlockingScheduler
 import matplotlib.pyplot as plot
-
+from time import gmtime, strftime
 
 def make_plot(labels=None, occurrences=None):
     if labels is None:
@@ -31,7 +31,8 @@ def make_plot(labels=None, occurrences=None):
 def set_labels(ax, labels, occurrences, x):
     """Add some text for labels, title and custom x-axis tick labels, etc."""
     ax.set_ylabel('# Occurrences (Updated Twice Daily)')
-    ax.set_title('Top 8 subreddit with # Occurrences on Reddit Frontpage')
+    ax.set_xlabel('Subreddits')
+    ax.set_title('Top 8 subreddits with # Occurrences on Reddit Frontpage')
     ax.set_xticks(x)
     plot.yticks(np.arange(min(occurrences), max(occurrences) + 1, 1.0))
     ax.set_xticklabels(labels)
@@ -48,7 +49,7 @@ def label_bar_heights(rects, ax):
                     ha='center', va='bottom')
 
 
-def get_sorted_subs_dict(subs):
+def get_sorted_subs_dict(subs, posts):
     """Given a list of subs, updates posts and returns the subs occurrences keyed to each sub sorted"""
     for sub_object in subs:
         if sub_object.string is not None:
@@ -71,15 +72,27 @@ def get_sub_objects_from_front_page():
 
 
 def main():
+    file = open("C:/Users/Ayden Chance/Desktop/achance6.github.io/Data.txt", 'r')
+    if input("Read last data?") != 'n':
+        for line in file:
+            inp = line
+        inp = inp[32:]
+        print(inp)
+        posts = eval(inp)
+    else:
+        posts = {}
     subs = get_sub_objects_from_front_page()
-    sorted_subs = get_sorted_subs_dict(subs)
-    sub_occurrence_plot = make_plot(list(sorted_subs.keys())[0:8], list(sorted_subs.values())[0:8])
+    sorted_subs = get_sorted_subs_dict(subs, posts)
+    sub_occurrence_plot = make_plot(list(sorted_subs.keys())[-9:-1], list(sorted_subs.values())[-9:-1])
     sub_occurrence_plot.savefig('C:/Users/Ayden Chance/Desktop/achance6.github.io/graph.png')
+    append_file = open("C:/Users/Ayden Chance/Desktop/achance6.github.io/Data.txt", 'a')
+    append_file.write(strftime("%a, %d %b %Y %H:%M:%S +0000: ", gmtime()) + str(sorted_subs) + '\n')
+    append_file.close()
+    file.close()
 
 
 if __name__ == "__main__":
-    posts = {}
     main()
-    scheduler = BlockingScheduler()
-    scheduler.add_job(main, 'interval', hours=12)
-    scheduler.start()
+    #scheduler = BlockingScheduler()
+    #scheduler.add_job(main, 'interval', hours=12)
+    #scheduler.start()
